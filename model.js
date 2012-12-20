@@ -1,15 +1,14 @@
 var mongoose = require('mongoose');
 
-var Schema = mongoose.Schema;
-
-var Picture = new Schema({
+var PictureSchema = new mongoose.Schema({
     added: {type: Date , default: Date.now()}
 });
 
+require('mongoose-attachments-localfs');
 var attachments = require('mongoose-attachments');
 
 module.exports = function(storageDirectory) {
-    Picture.plugin(attachments, {
+    PictureSchema.plugin(attachments, {
 	directory: storageDirectory,
 	storage: {
 	    providerName: 'fs'
@@ -27,7 +26,7 @@ module.exports = function(storageDirectory) {
 	    }
 	}
     });
-    mongoose.model('Picture', Picture);
+     mongoose.model('Picture', PictureSchema);
     return {
 	Picture: mongoose.model('Picture')
     };
