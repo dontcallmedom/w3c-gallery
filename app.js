@@ -138,7 +138,7 @@ function errorHandler (err, req, res, next) {
 }
 
 if (require.main === module) {
-    app.listen(app.set('port'));a
+    app.listen(app.set('port'));
     console.log("Express server listening on port %d in %s mode", app.set('port'), app.settings.env);
 }
 
