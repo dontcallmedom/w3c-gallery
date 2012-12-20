@@ -29,6 +29,7 @@ app.configure(function(){
     // Connecting to Mongo database
     var mongoose = require('mongoose');
     mongoose.connect(config.mongo.host, config.mongo.dbname);
+    module.exports.db = mongoose;
     var db = mongoose.connection;
     db.on('error', function (err) { throw new Error('MongoDb connection failed: ' + err) });
 
