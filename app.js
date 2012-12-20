@@ -62,6 +62,8 @@ app.post('/gallery', function(req, res, next) {
 	if (err) return next(err);
 	picture.save(function(err) {
 	    if (err) return next(err);
+	    eventQueue.push({url: picture.path});
+	    emitter.emit("addpicture", picture.path, eventQueue.length);
 	    if (req.xhr) {
 		res.status(201);
 		res.setHeader("Location",picture.path);
