@@ -65,9 +65,9 @@ app.post('/gallery', function(req, res, next) {
 	    if (err) return next(err);
 	    eventQueue.push({url: picture.path});
 	    emitter.emit("addpicture", picture.path, eventQueue.length);
-	    if (req.xhr) {
-		res.status(201);
-		res.setHeader("Location",picture.path);
+	    res.statusCode = 201;
+	    res.set("Location",picture.path);
+	    if (req.accepts('json')) {
 		res.send({picture:{url:picture.path}});
 	    } else {
 		res.send('Post has been saved with file!');
@@ -130,7 +130,7 @@ app.get('/stream', function(req, res) {
 
 function errorHandler (err, req, res, next) {
     res.status(500);
-    if (req.xhr) {
+    if (req.accepts('json')) {
 	res.send({error: err});
     } else {
 	res.send(err);
