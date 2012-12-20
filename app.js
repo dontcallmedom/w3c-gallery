@@ -57,7 +57,7 @@ app.get('/', function(req, res) {
 });
 
 app.post('/gallery', function(req, res, next) {
-    var picture = Picture();
+    var picture = new Picture();
 
     picture.attach('image', req.files.image, function(err) { 
 	if (err) return next(err);
