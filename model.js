@@ -10,10 +10,10 @@ var Picture = new Schema({
 var attachments = require('mongoose-attachments');
 
 module.exports = function(storageDirectory) {
-/*    Picture.plugin(attachments, {
+    Picture.plugin(attachments, {
 	directory: storageDirectory,
 	storage: {
-	    providerName: 'localfs'
+	    providerName: 'fs'
 	},
 	properties: {
 	    image: {
@@ -27,7 +27,7 @@ module.exports = function(storageDirectory) {
 		}
 	    }
 	}
-    });*/
+    });
     mongoose.model('Picture', Picture);
     return {
 	Picture: mongoose.model('Picture')
