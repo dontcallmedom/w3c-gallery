@@ -5,7 +5,7 @@ var app = express();
 var fs = require('fs');
 
 var eventQueue = [];
-
+var Picture;
 
 app.configure(function(){
     // Reading command line options
@@ -32,7 +32,7 @@ app.configure(function(){
     db.on('error', function (err) { throw new Error('MongoDb connection failed: ' + err) });
 
     // and loading schemas for it
-    var Picture = require('./model.js')(storageDir).Picture();
+    Picture = require('./model.js')(storageDir).Picture;
 
     emitter.setMaxListeners(0);
     app.use(express.logger());
@@ -55,7 +55,7 @@ app.get('/', function(req, res) {
 });
 
 app.post('/gallery', function(req, res, next) {
-    var picture = new mongoose.model('Picture')();
+    var picture = Picture();
 
     picture.attach('image', req.files.image, function(err) { 
 	if (err) return next(err);
@@ -88,6 +88,32 @@ app.all('/gallery.:format?', function(req, res) {
             res.send(content);
 	});
     }
+});
+
+app.get('/photos/:id', function(req, res) {
+    Picture.findOne({_id: req.params.id}, function(err, pic) {
+	if (pic) {
+	    console.log(pic);
+	    console.log(pic.added);
+	    console.log(pic.path);
+	    fs.readFile(pic.path, function(err, content){
+		if (err) {
+		    res.status(410);
+		    res.send("Could not find saved picture " + pic._id + " on storage");
+		} else {
+		    if (pic.format) {
+			res.setHeader("Content-Type", "image/" + pic.format.toLowerCase());
+		    } else {
+			res.setHeader("Content-Type", "image/jpeg");
+		    }
+		    res.send(content);
+		}
+	    });
+	} else {
+	    res.status(404);
+	    res.send("Unknown picture " + req.params.id);
+	}
+    });
 });
 
 app.get('/stream', function(req, res) {
