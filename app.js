@@ -93,9 +93,6 @@ app.all('/gallery.:format?', function(req, res) {
 app.get('/photos/:id', function(req, res) {
     Picture.findOne({_id: req.params.id}, function(err, pic) {
 	if (pic) {
-	    console.log(pic);
-	    console.log(pic.added);
-	    console.log(pic.path);
 	    fs.readFile(pic.path, function(err, content){
 		if (err) {
 		    res.status(410);
