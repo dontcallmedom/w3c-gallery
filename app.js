@@ -2,10 +2,11 @@ var express = require('express');
 var EventEmitter = require('events').EventEmitter;
 var emitter = new EventEmitter();
 var app = express();
+module.exports.app = app;
 var fs = require('fs');
 
 var eventQueue = [];
-
+var Picture;
 
 app.configure(function(){
     // Reading command line options
@@ -28,11 +29,12 @@ app.configure(function(){
     // Connecting to Mongo database
     var mongoose = require('mongoose');
     mongoose.connect(config.mongo.host, config.mongo.dbname);
+    module.exports.db = mongoose;
     var db = mongoose.connection;
     db.on('error', function (err) { throw new Error('MongoDb connection failed: ' + err) });
 
     // and loading schemas for it
-    var Picture = require('./model.js')(storageDir).Picture();
+    Picture = require('./model.js')(storageDir).Picture;
 
     emitter.setMaxListeners(0);
     app.use(express.logger());
@@ -55,9 +57,8 @@ app.get('/', function(req, res) {
 });
 
 app.post('/gallery', function(req, res, next) {
-    var picture = new mongoose.model('Picture')();
-    // uuid generation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
-    picture.slug = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;return v.toString(16);});
+    var picture = Picture();
+
     picture.attach('image', req.files.image, function(err) { 
 	if (err) return next(err);
 	picture.save(function(err) {
@@ -91,6 +92,29 @@ app.all('/gallery.:format?', function(req, res) {
     }
 });
 
+app.get('/photos/:id', function(req, res) {
+    Picture.findOne({_id: req.params.id}, function(err, pic) {
+	if (pic) {
+	    fs.readFile(pic.path, function(err, content){
+		if (err) {
+		    res.status(410);
+		    res.send("Could not find saved picture " + pic._id + " on storage");
+		} else {
+		    if (pic.format) {
+			res.setHeader("Content-Type", "image/" + pic.format.toLowerCase());
+		    } else {
+			res.setHeader("Content-Type", "image/jpeg");
+		    }
+		    res.send(content);
+		}
+	    });
+	} else {
+	    res.status(404);
+	    res.send("Unknown picture " + req.params.id);
+	}
+    });
+});
+
 app.get('/stream', function(req, res) {
     res.setHeader("Content-Type", 'text/event-stream');
     res.setHeader("Cache-Control", "no-cache");
@@ -113,5 +137,8 @@ function errorHandler (err, req, res, next) {
     }
 }
 
-app.listen(app.set('port'));
-console.log("Express server listening on port %d in %s mode", app.set('port'), app.settings.env);
+if (require.main === module) {
+    app.listen(app.set('port'));a
+    console.log("Express server listening on port %d in %s mode", app.set('port'), app.settings.env);
+}
+

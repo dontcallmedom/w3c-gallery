@@ -10,7 +10,9 @@
     "iniparser":">= 1.0.3",
     "optimist":">= 0.2.6"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha":">= 1.7.4",
+    "supertest":">= 0.5.1"},
   "engines": {
     "node": "*"
   },
