@@ -3,8 +3,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var Picture = new Schema({
-    slug: {type: String, unique: true},
-    added: Date  
+    added: {type: Date , default: Date.now()}
 });
 
 var attachments = require('mongoose-attachments');
