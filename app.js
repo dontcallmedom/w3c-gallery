@@ -66,9 +66,10 @@ app.post('/gallery', function(req, res, next) {
 	    eventQueue.push({url: picture.path});
 	    emitter.emit("addpicture", picture.path, eventQueue.length);
 	    res.statusCode = 201;
-	    res.set("Location",picture.path);
+	    var photoPath = "/photos/" + picture._id;
+	    res.set("Location", photoPath);
 	    if (req.accepts('json')) {
-		res.send({picture:{url:picture.path}});
+		res.send({picture:{url:photoPath}});
 	    } else {
 		res.send('Post has been saved with file!');
 	    }
@@ -95,13 +96,13 @@ app.all('/gallery.:format?', function(req, res) {
 app.get('/photos/:id', function(req, res) {
     Picture.findOne({_id: req.params.id}, function(err, pic) {
 	if (pic) {
-	    fs.readFile(pic.path, function(err, content){
+	    fs.readFile(pic.image.original.path, function(err, content){
 		if (err) {
 		    res.status(410);
 		    res.send("Could not find saved picture " + pic._id + " on storage");
 		} else {
-		    if (pic.format) {
-			res.setHeader("Content-Type", "image/" + pic.format.toLowerCase());
+		    if (pic.image.original.format) {
+			res.setHeader("Content-Type", "image/" + pic.image.original.format.toLowerCase());
 		    } else {
 			res.setHeader("Content-Type", "image/jpeg");
 		    }
