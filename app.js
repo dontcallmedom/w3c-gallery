@@ -57,8 +57,11 @@ app.get('/', function(req, res) {
 });
 
 app.post('/gallery', function(req, res, next) {
+    if (!req.files || !req.files.image) {
+	res.status(400).send("Missing image upload");
+	return;
+    }
     var picture = new Picture();
-
     picture.attach('image', req.files.image, function(err) { 
 	if (err) return next(err);
 	picture.save(function(err) {
