@@ -86,7 +86,12 @@ app.all('/gallery.:format?', function(req, res) {
     case 'json':
 	Picture.find({}).sort('-added').exec(
 	    function(err, pictures) {
-		res.send(pictures);
+		var formattedPictures = [];
+		for (var i = 0; i < pictures.length; i++) {
+		    var pic = pictures[i];
+		    formattedPictures.push({url: "/photos/" + pic._id});
+		}
+		res.send(formattedPictures);
 	    });
 	break;
     default:
