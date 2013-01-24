@@ -96,7 +96,7 @@ app.post('/gallery', function(req, res, next) {
 	    var photoPath = "/photos/" + picture._id;
 	    res.set("Location", photoPath);
 	    if (req.accepts('json')) {
-		res.send({picture:{pic}});
+		res.send({picture:pic});
 	    } else {
 		res.send('Post has been saved with file!');
 	    }
