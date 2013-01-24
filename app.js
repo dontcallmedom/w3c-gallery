@@ -40,7 +40,8 @@ app.configure(function(){
     app.use(express.logger());
     app.set('port', process.env.PORT || 3000);
     app.use(express.bodyParser());
-    app.use(express.static(__dirname + '/public', { maxAge: 86400}));
+    app.use(express.static(__dirname + '/public/', { maxAge: 86400}));
+    app.use('/camera', express.static(__dirname + '/public/camera/vanilla/', { maxAge: 86400}));
     app.use(errorHandler);
 });
 
@@ -55,6 +56,13 @@ app.get('/', function(req, res) {
         res.send(content);
     });
 });
+
+app.get('/camera/', function(req, res) {
+    fs.readFile(__dirname + '/public/camera/vanilla/index.html', 'utf8', function(err, content){
+        res.send(content);
+    });
+});
+
 
 app.post('/gallery', function(req, res, next) {
     if (!req.files || !req.files.image) {
