@@ -38,7 +38,7 @@ app.configure(function(){
 
     emitter.setMaxListeners(0);
     app.use(express.logger());
-    app.set('port', process.env.PORT || 3000);
+    app.set('port', config.hosting.hostname.split(":")[2] ? config.hosting.hostname.split(":")[2] : process.env.PORT || 3000);
     app.use(express.bodyParser());
     app.use(express.static(__dirname + '/public/', { maxAge: 86400}));
     app.use('/camera', express.static(__dirname + '/public/camera/vanilla/', { maxAge: 86400}));
@@ -100,9 +100,16 @@ app.all('/gallery.:format?', function(req, res) {
 		var formattedPictures = [];
 		for (var i = 0; i < pictures.length; i++) {
 		    var pic = pictures[i];
-		    formattedPictures.push({url: "/photos/" + pic._id});
+		    formattedPictures.push(
+			{
+			    "@type": "ImageObject",
+			    url: config.hosting.hostname + "/photos/" + pic._id,			    name: pic.title,
+			    width: pic.image.original.dims.w,
+			    height: pic.image.original.dims.h,
+			    datePublished: pic.added
+			});
 		}
-		res.send(formattedPictures);
+		res.jsonp(formattedPictures);
 	    });
 	break;
     default:
