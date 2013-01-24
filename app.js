@@ -6,6 +6,7 @@ module.exports.app = app;
 var fs = require('fs');
 
 var eventQueue = [];
+var hostname = "";
 var Picture;
 
 app.configure(function(){
@@ -17,6 +18,10 @@ app.configure(function(){
     
     // Reading configuration file
     var config = require('iniparser').parseSync(argv.c);
+
+    if (!config.hosting.hostname) { // TODO: check the value is valid
+	hostname = config.hosting.hostname;
+    }
 
     // checking whether storage directory exists and is writeable
     var storageDir = config.storage.directory;
@@ -103,13 +108,14 @@ app.all('/gallery.:format?', function(req, res) {
 		    formattedPictures.push(
 			{
 			    "@type": "ImageObject",
-			    url: config.hosting.hostname + "/photos/" + pic._id,			    name: pic.title,
+			    url: hostname + "/photos/" + pic._id,
+			    name: pic.title,
 			    width: pic.image.original.dims.w,
 			    height: pic.image.original.dims.h,
 			    datePublished: pic.added
 			});
 		}
-		res.jsonp(formattedPictures);
+		res.jsonp({entries:formattedPictures});
 	    });
 	break;
     default:
