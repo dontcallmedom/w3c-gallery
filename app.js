@@ -82,13 +82,21 @@ app.post('/gallery', function(req, res, next) {
 	if (err) return next(err);
 	picture.save(function(err) {
 	    if (err) return next(err);
-	    eventQueue.push({url: picture.path});
-	    emitter.emit("addpicture", picture.path, eventQueue.length);
+	    var pic = {
+		"@type": "ImageObject",
+		url: hostname + "/photos/" + picture._id,
+		name: picture.title,
+		width: picture.image.original.dims.w,
+		height: picture.image.original.dims.h,
+		datePublished: picture.added
+	    }
+	    eventQueue.push(pic);
+	    emitter.emit("addpicture", pic, eventQueue.length);
 	    res.statusCode = 201;
 	    var photoPath = "/photos/" + picture._id;
 	    res.set("Location", photoPath);
 	    if (req.accepts('json')) {
-		res.send({picture:{url:photoPath}});
+		res.send({picture:{pic}});
 	    } else {
 		res.send('Post has been saved with file!');
 	    }
@@ -155,8 +163,8 @@ app.get('/stream', function(req, res) {
     res.writeHead(200);
     // avoid timeout
     setInterval(function() { res.write(":\n"); }, 30000);
-    emitter.on("addpicture", function(url, id) {
-	res.write("data: " + JSON.stringify({'url': url})+ "\n");
+    emitter.on("addpicture", function(pic, id) {
+	res.write("data: " + JSON.stringify(pic)+ "\n");
 	res.write("id: " + id + "\n\n");
     });
 });
