@@ -1,3 +1,3 @@
 [submodule "public/camera"]
 	path = public/camera
-	url = git@github.com:coremob/camera.git
+	url = git://github.com/coremob/camera.git
