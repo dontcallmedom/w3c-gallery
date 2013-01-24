@@ -1,7 +1,8 @@
 var mongoose = require('mongoose');
 
 var PictureSchema = new mongoose.Schema({
-    added: {type: Date , default: Date.now()}
+    added: {type: Date , default: Date.now()},
+    title: String
 });
 
 require('mongoose-attachments-localfs');
@@ -16,7 +17,7 @@ module.exports = function(storageDirectory) {
 	properties: {
 	    image: {
 		styles: {
-		    original: {},
+		    original: {'$format': 'jpg'},
 		    thumb: {
 			thumbnail: '100x100^',
 			gravity: 'center',

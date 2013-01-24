@@ -70,6 +70,9 @@ app.post('/gallery', function(req, res, next) {
 	return;
     }
     var picture = new Picture();
+    if (req.body.title) {
+	picture.title = req.body.title;
+    }
     picture.attach('image', req.files.image, function(err) { 
 	if (err) return next(err);
 	picture.save(function(err) {
