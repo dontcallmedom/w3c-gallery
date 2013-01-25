@@ -20,8 +20,9 @@ app.configure(function(){
     var config = require('iniparser').parseSync(argv.c);
 
     if (!config.hosting.hostname) { // TODO: check the value is valid
-	hostname = config.hosting.hostname;
+	throw new Error("Undefined hostname: please set a value for hostname in config.ini");
     }
+    hostname = config.hosting.hostname;
 
     // checking whether storage directory exists and is writeable
     var storageDir = config.storage.directory;
