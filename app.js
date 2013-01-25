@@ -141,6 +141,11 @@ app.get('/photos/:size?/:id', function(req, res) {
     Picture.findOne({_id: req.params.id}, function(err, pic) {
 	var size = (req.params.size == "s" ? "thumb" : "original");
 	if (pic) {
+	    if (!pic.image[size] || !pic.image[size].path) {
+		res.status(410);
+		res.send("Picture " + pic._id + " failed to be saved on storage");
+		return;
+	    }
 	    fs.readFile(pic.image[size].path, function(err, content){
 		if (err) {
 		    res.status(410);
