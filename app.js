@@ -51,6 +51,24 @@ app.configure(function(){
     app.use(errorHandler);
 });
 
+function pictureAsImageObject(pic) {
+    return {
+	"@type": "ImageObject",
+	contentURL: hostname + "/photos/" + pic._id,
+	name: pic.title,
+	width: pic.image.original.dims.w,
+	height: pic.image.original.dims.h,
+	datePublished: pic.added,
+	image: {
+	    "@type": "ImageObject",
+	    contentURL: hostname + "/photos/s/" + pic._id,
+	    name: pic.title,
+	    width: pic.image.thumb.dims.w,
+	    height: pic.image.thumb.dims.h
+	}
+    };	
+}
+
 // Run on port 80 when in production mode
 app.configure('production', function(){
     app.use(express.errorHandler()); 
@@ -83,14 +101,7 @@ app.post('/gallery', function(req, res, next) {
 	if (err) return next(err);
 	picture.save(function(err) {
 	    if (err) return next(err);
-	    var pic = {
-		"@type": "ImageObject",
-		url: hostname + "/photos/" + picture._id,
-		name: picture.title,
-		width: picture.image.original.dims.w,
-		height: picture.image.original.dims.h,
-		datePublished: picture.added
-	    }
+	    var pic = pictureAsImageObject(picture);
 	    eventQueue.push(pic);
 	    emitter.emit("addpicture", pic, eventQueue.length);
 	    res.statusCode = 201;
@@ -114,15 +125,7 @@ app.all('/gallery.:format?', function(req, res) {
 		var formattedPictures = [];
 		for (var i = 0; i < pictures.length; i++) {
 		    var pic = pictures[i];
-		    formattedPictures.push(
-			{
-			    "@type": "ImageObject",
-			    url: hostname + "/photos/" + pic._id,
-			    name: pic.title,
-			    width: pic.image.original.dims.w,
-			    height: pic.image.original.dims.h,
-			    datePublished: pic.added
-			});
+		    formattedPictures.push(pictureAsImageObject(pic));
 		}
 		res.jsonp({entries:formattedPictures});
 	    });
@@ -134,16 +137,17 @@ app.all('/gallery.:format?', function(req, res) {
     }
 });
 
-app.get('/photos/:id', function(req, res) {
+app.get('/photos/:size?/:id', function(req, res) {
     Picture.findOne({_id: req.params.id}, function(err, pic) {
+	var size = (req.params.size == "s" ? "thumb" : "original");
 	if (pic) {
-	    fs.readFile(pic.image.original.path, function(err, content){
+	    fs.readFile(pic.image[size].path, function(err, content){
 		if (err) {
 		    res.status(410);
 		    res.send("Could not find saved picture " + pic._id + " on storage");
 		} else {
-		    if (pic.image.original.format) {
-			res.setHeader("Content-Type", "image/" + pic.image.original.format.toLowerCase());
+		    if (pic.image[size].format) {
+			res.setHeader("Content-Type", "image/" + pic.image[size].format.toLowerCase());
 		    } else {
 			res.setHeader("Content-Type", "image/jpeg");
 		    }
