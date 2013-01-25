@@ -12,7 +12,7 @@ module.exports = function(storageDirectory) {
     PictureSchema.plugin(attachments, {
 	directory: storageDirectory,
 	storage: {
-	    providerName: 'fs'
+	    providerName: 'localfs'
 	},
 	properties: {
 	    image: {
