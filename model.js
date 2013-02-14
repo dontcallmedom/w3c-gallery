@@ -19,7 +19,7 @@ module.exports = function(storageDirectory) {
 		styles: {
 		    original: {'$format': 'jpg'},
 		    thumb: {
-			thumbnail: '100x100^',
+			thumbnail: '300x300^',
 			gravity: 'center',
 			extent: '100x100',
 			'$format': 'jpg'}
