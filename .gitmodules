@@ -1,3 +1,6 @@
 [submodule "public/camera"]
 	path = public/camera
 	url = git://github.com/coremob/camera.git
+[submodule "public/gallery"]
+	path = public/gallery
+	url = git://github.com/joshfire/factory-template-sleek.git
