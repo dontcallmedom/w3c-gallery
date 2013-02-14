@@ -103,7 +103,7 @@ app.post('/gallery', function(req, res, next) {
 	    if (err) return next(err);
 	    var pic = pictureAsImageObject(picture);
 	    eventQueue.push(pic);
-	    emitter.emit("addpicture", pic, eventQueue.length);
+les	    emitter.emit("addpicture", pic, eventQueue.length);
 	    res.statusCode = 201;
 	    var photoPath = "/photos/" + picture._id;
 	    res.set("Location", photoPath);
@@ -130,8 +130,15 @@ app.all('/gallery.:format?', function(req, res) {
 		res.jsonp({entries:formattedPictures});
 	    });
 	break;
+    case 'tv':
+    case 'phone':
+    case 'tablet':
+	fs.readFile(__dirname + '/public/gallery/app/index.' + req.params.format + '.optimized.html', 'utf8', function(err, content){
+            res.send(content);
+	});
+	break;
     default:
-	fs.readFile(__dirname + '/public/gallery.html', 'utf8', function(err, content){
+	fs.readFile(__dirname + '/public/gallery/app/index.desktop.optimized.html', 'utf8', function(err, content){
             res.send(content);
 	});
     }
