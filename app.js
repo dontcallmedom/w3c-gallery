@@ -44,7 +44,7 @@ app.configure(function(){
 
     emitter.setMaxListeners(0);
     app.use(express.logger());
-    app.set('port', config.hosting.hostname.split(":")[2] ? config.hosting.hostname.split(":")[2] : process.env.PORT || 3000);
+    app.set('port', require("url").parse(config.hosting.hostname).port ? require("url").parse(config.hosting.hostname).port : process.env.PORT || 3000);
     app.use(express.bodyParser());
     app.use(express.static(__dirname + '/public/', { maxAge: 86400}));
     app.use('/camera', express.static(__dirname + '/public/camera/vanilla/', { maxAge: 86400}));
@@ -201,7 +201,7 @@ function errorHandler (err, req, res, next) {
 }
 
 if (require.main === module) {
-    app.listen(app.set('port'));
+    require("http").createServer(app).listen(app.set('port'), require("url").parse(hostname).hostname);
     console.log("Express server listening on port %d in %s mode", app.set('port'), app.settings.env);
 }
 
