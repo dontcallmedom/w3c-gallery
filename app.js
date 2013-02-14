@@ -48,6 +48,7 @@ app.configure(function(){
     app.use(express.bodyParser());
     app.use(express.static(__dirname + '/public/', { maxAge: 86400}));
     app.use('/camera', express.static(__dirname + '/public/camera/vanilla/', { maxAge: 86400}));
+    app.use('/gallery', express.static(__dirname + '/public/gallery/app/', { maxAge: 86400}));
     app.use(errorHandler);
 });
 
@@ -116,31 +117,35 @@ app.post('/gallery', function(req, res, next) {
     })    
 });
 
-app.all('/gallery.:format?', function(req, res) {
+app.get('/gallery.json', function(req, res) {
+    Picture.find({}).sort('-added').exec(
+	function(err, pictures) {
+	    var formattedPictures = [];
+	    for (var i = 0; i < pictures.length; i++) {
+		var pic = pictures[i];
+		formattedPictures.push(pictureAsImageObject(pic));
+	    }
+	    res.jsonp({entries:formattedPictures});
+	});
+});
+
+app.get('/gallery/:format', function(req, res, next) {
     switch (req.params.format) {
-	// When json, generate suitable data
-    case 'json':
-	Picture.find({}).sort('-added').exec(
-	    function(err, pictures) {
-		var formattedPictures = [];
-		for (var i = 0; i < pictures.length; i++) {
-		    var pic = pictures[i];
-		    formattedPictures.push(pictureAsImageObject(pic));
-		}
-		res.jsonp({entries:formattedPictures});
-	    });
-	break;
     case 'tv':
     case 'phone':
     case 'tablet':
-	fs.readFile(__dirname + '/public/gallery/app/index.' + req.params.format + '.optimized.html', 'utf8', function(err, content){
+    case 'desktop':
+    case '':
+	var format = req.params.format;
+	if (req.params.format === '') {
+	    format = 'desktop';
+	}
+	fs.readFile(__dirname + '/public/gallery/app/index.' + format + '.optimized.html', 'utf8', function(err, content){
             res.send(content);
 	});
 	break;
     default:
-	fs.readFile(__dirname + '/public/gallery/app/index.desktop.optimized.html', 'utf8', function(err, content){
-            res.send(content);
-	});
+	next();
     }
 });
 
