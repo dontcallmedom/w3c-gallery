@@ -103,7 +103,7 @@ app.post('/gallery', function(req, res, next) {
 	    if (err) return next(err);
 	    var pic = pictureAsImageObject(picture);
 	    eventQueue.push(pic);
-les	    emitter.emit("addpicture", pic, eventQueue.length);
+	    emitter.emit("addpicture", pic, eventQueue.length);
 	    res.statusCode = 201;
 	    var photoPath = "/photos/" + picture._id;
 	    res.set("Location", photoPath);
