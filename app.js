@@ -132,6 +132,7 @@ app.get('/gallery.json', function(req, res) {
 app.get('/gallery/:format', function(req, res, next) {
     switch (req.params.format) {
     case 'tv':
+    case 'samsung':
     case 'phone':
     case 'tablet':
     case 'desktop':
@@ -201,7 +202,8 @@ function errorHandler (err, req, res, next) {
 }
 
 if (require.main === module) {
-    require("http").createServer(app).listen(app.set('port'), require("url").parse(hostname).hostname);
-    console.log("Express server listening on port %d in %s mode", app.set('port'), app.settings.env);
+    var host = require("url").parse(hostname).hostname;
+    require("http").createServer(app).listen(app.set('port'));
+    console.log("Express server listening on %s port %d in %s mode", host, app.set('port'), app.settings.env);
 }
 
