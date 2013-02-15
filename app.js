@@ -3,7 +3,7 @@ var EventEmitter = require('events').EventEmitter;
 var emitter = new EventEmitter();
 var app = express();
 module.exports.app = app;
-var fs = require('fs');
+var fs = require('fs'), temp = require('temp');
 
 var eventQueue = [];
 var hostname = "";
@@ -90,31 +90,70 @@ app.get('/camera/', function(req, res) {
 
 
 app.post('/gallery', function(req, res, next) {
-    if (!req.files || !req.files.image) {
+    if (!req.files || (!req.files.image && !req.files.txt)) {
+	console.log("Missing image upload:" );
+	console.log(req);
 	res.status(400).send("Missing image upload");
 	return;
     }
-    var picture = new Picture();
-    if (req.body.title) {
-	picture.title = req.body.title;
-    }
-    picture.attach('image', req.files.image, function(err) { 
-	if (err) return next(err);
-	picture.save(function(err) {
+    function savePicture(image, req, res) {
+	var picture = new Picture();
+	if (req.body.title) {
+	    picture.title = req.body.title;
+	}
+	picture.attach('image', image, function(err) { 
 	    if (err) return next(err);
-	    var pic = pictureAsImageObject(picture);
-	    eventQueue.push(pic);
-	    emitter.emit("addpicture", pic, eventQueue.length);
-	    res.statusCode = 201;
-	    var photoPath = "/photos/" + picture._id;
-	    res.set("Location", photoPath);
-	    if (req.accepts('json')) {
-		res.send({picture:pic});
-	    } else {
-		res.send('Post has been saved with file!');
+	    picture.save(function(err) {
+		if (err) return next(err);
+		var pic = pictureAsImageObject(picture);
+		eventQueue.push(pic);
+		emitter.emit("addpicture", pic, eventQueue.length);
+		res.statusCode = 201;
+		var photoPath = "/photos/" + picture._id;
+		res.set("Location", photoPath);
+		if (req.accepts('json')) {
+		    res.send({picture:pic});
+		} else {
+		    res.send('Post has been saved with file!');
+		}
+	    });
+	})    
+    }
+
+    if (req.files.image) {
+	savePicture(req.files.image, req, res);
+    } else { // req.files.txt
+	fs.readFile(req.files.txt.path, 'UTF-8', function (err, string) {
+	    if (err) {
+		console.log(err);
+		res.status(400).send("Failed to read txt file:" + err);
+		return;
 	    }
+	    var regex = /^data:.+\/(.+);base64,(.*)$/;	
+	    var matches = string.match(regex);
+	    var ext = matches[1];
+	    var data = matches[2];
+	    var buffer = new Buffer(data, 'base64');
+	    temp.open('w3cgallery', function(err, tmpimage) {
+		if (err) {
+		    console.log(err);
+		    res.status(400).send("Failed to open file to save txt version of image as temporary image file:" + err);
+		    return;
+		}
+		fs.write(tmpimage.fd, buffer, 0, buffer.length, null, function() {
+		    fs.close(tmpimage.fd, function(err) {
+			if (err) {
+			    console.log(err);
+			    res.status(400).send("Failed to save txt version of image as temporary image file:" + err);
+			    return;
+			}
+			savePicture(tmpimage, req, res);		    
+		    });
+		});
+	    });
 	});
-    })    
+
+    }
 });
 
 app.get('/gallery.json', function(req, res) {
